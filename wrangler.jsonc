@@ -5,10 +5,10 @@
   "main": "./src/index.tsx",
   "d1_databases": [
     {
-      "binding": "DB", // This is the name your Hono app will use to access D1 (c.env.DB)
-      "database_name": "playlisturlify-db", // The name you chose when creating the DB
-      "database_id": "fc67ed8f-f638-438b-995b-cd343fe2b37b", // <<< REPLACE THIS with your actual ID
-      "migrations_dir": "migrations", // The directory where your migration files are stored
+      "binding": "DB",
+      "database_name": "playlisturlify-db",
+      "database_id": "390a3953-b9dc-420e-a799-63fdbe0e69d4",
+      "migrations_dir": "migrations",
     }
   ],
 }
