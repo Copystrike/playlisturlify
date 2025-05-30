@@ -169,7 +169,7 @@ npm install
     ```
 
 4.  **Create `schema.sql`:**
-    Create a file named `schema.sql` in the project root (`spotify-adder/schema.sql`) with the D1 schema:
+    Create a file named `schema.sql` in the project root (`schema.sql`) with the D1 schema:
     ```sql
     -- schema.sql
     CREATE TABLE IF NOT EXISTS users (
@@ -183,7 +183,7 @@ npm install
 
 5.  **Generate Initial Migration File:**
     ```bash
-    wrangler d1 migrations create spotify-adder-db init_schema
+    wrangler d1 migrations create playlisturlify-db init_schema
     ```
     This will create a file like `migrations/<timestamp>_init_schema.sql`.
 
@@ -193,19 +193,19 @@ npm install
 
 7.  **Apply Migrations to Local D1 Emulator:**
     ```bash
-    wrangler d1 migrations apply spotify-adder-db --local
+    wrangler d1 migrations apply playlisturlify-db --local
     ```
     Confirm you want to apply the migration. You should see "status: OK" or similar success message.
 
 8.  **Verify Table Creation (Optional but recommended):**
     ```bash
-    wrangler d1 execute spotify-adder-db --local --command "SELECT name FROM sqlite_master WHERE type='table' AND name='users';"
+    wrangler d1 execute playlisturlify-db --local --command "SELECT name FROM sqlite_master WHERE type='table' AND name='users';"
     ```
     Expected output: `[ { "name": "users" } ]`
 
 ### 6. Environment Variables
 
-Create a `.dev.vars` file in your project root (`spotify-adder/.dev.vars`) and fill it with your Spotify app credentials:
+Create a `.dev.vars` file in your project root (`.dev.vars`) and fill it with your Spotify app credentials:
 
 ```
 # .dev.vars
@@ -245,7 +245,7 @@ The application will be accessible at `http://localhost:8787` (or similar port).
     If you haven't already, apply your database schema to your live Cloudflare D1 instance.
 
     ```bash
-    wrangler d1 migrations apply spotify-adder-db --remote
+    wrangler d1 migrations apply playlisturlify-db --remote
     ```
 
 3.  **Deploy the Worker:**
