@@ -1,4 +1,4 @@
-# Spotify Add To Playlist Helper
+# PlaylistUrlify
 
 ## A Cloudflare Workers Application for Adding Songs to Spotify Playlists via URL
 
@@ -29,10 +29,16 @@ This application aims to simplify adding music to Spotify playlists, especially 
 *   **Spotify Authentication:** Users can securely authenticate with their Spotify account using the Authorization Code Flow.
 *   **Personal API Token:** Upon first login, each user is issued a unique, secure API token. This token acts as a lightweight, per-user authentication mechanism for the `/add` endpoint.
 *   **API Token Management:** Users can view their API token on a dashboard, regenerate it (invalidating the old one), or delete their entire account and token.
-*   **iPhone Shortcut Integration:** The core functionality enables a simple HTTP GET request from an iPhone Shortcut (or similar automation tool) to add a song to a specified playlist:
-    ```
-    https://yourapp.com/add?song=SONG_NAME&playlist=PLAYLIST_NAME&token=YOUR_API_KEY
-    ```
+*   **iPhone Shortcut Integration:** The core functionality enables a simple HTTP GET request from an iPhone Shortcut (or similar automation tool) to add a song to a specified playlist. The API key can be provided either as a query parameter or in the `Authorization` header:
+    *   Query parameter:
+        ```
+        https://yourapp.com/add?query=SONG_QUERY&playlist=PLAYLIST_NAME&token=YOUR_API_KEY
+        ```
+    *   Authorization header:
+        ```
+        GET https://yourapp.com/add?query=SONG_QUERY&playlist=PLAYLIST_NAME
+        Authorization: Bearer YOUR_API_KEY
+        ```
 *   **Automatic Token Refresh:** The application automatically handles the refreshing of Spotify access tokens in the background, ensuring long-lived API key validity.
 
 ---
@@ -90,7 +96,7 @@ CREATE TABLE users (
 | `/dashboard/logout`| POST   | Clears the session cookie to log the user out.            |
 | `/api/generate` | POST   | Regenerates the API key for the current authenticated user. Requires authentication. |
 | `/api/delete`   | POST   | Deletes the current user's account and all associated data from D1. Requires authentication. |
-| `/add`          | GET    | The primary endpoint for adding songs. Accepts `song`, `playlist` (query parameters), and `token` (API key) for authentication. |
+| `/add`          | GET    | The primary endpoint for adding songs. Accepts `query`, `playlist` (query parameters). Authentication via `token` query parameter or `Authorization: Bearer <token>` header. |
 
 ---
 
@@ -123,15 +129,18 @@ npm install
 1.  Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/).
 2.  Create a new application.
 3.  In your app's settings, add the following to **Redirect URIs**:
-    *   `http://localhost:8787/callback`
-    *   (Optional, for future deployment) `https://your-app-domain.com/callback` (replace with your actual domain)
+    *   `http://localhost:8787/auth/callback` (for local development using `npm run dev`)
+    *   `http://127.0.0.1:8787/auth/callback` (alternative for local development, depending on how you access it)
+    *   `https://your-worker-name.your-account.workers.dev/auth/callback` (for production, replace with your actual Cloudflare Worker URL)
+    *   If using a custom domain: `https://your-custom-domain.com/auth/callback`
+    It's crucial that these URIs exactly match what your application will use, including the `/auth/callback` path.
 4.  Note down your **Client ID** and **Client Secret**.
 
 ### 5. Cloudflare D1 Setup (Local)
 
 1.  **Create a D1 Database:** This needs to be done once to get a `database_id`.
     ```bash
-    wrangler d1 create spotify-adder-db
+    wrangler d1 create PlaylistUrlify-db
     ```
     *   Note the `database_id` from the output (e.g., `fc67ed8f-f638-438b-995b-cd343fe2b37b`).
 
@@ -140,13 +149,13 @@ npm install
     ```jsonc
     {
       "$schema": "node_modules/wrangler/config-schema.json",
-      "name": "spotify-adder",
+      "name": "PlaylistUrlify",
       "compatibility_date": "2024-04-01",
       "main": "./src/index.tsx",
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "spotify-adder-db",
+          "database_name": "PlaylistUrlify-db",
           "database_id": "YOUR_D1_DATABASE_ID_HERE", # <--- REPLACE THIS
           "migrations_dir": "migrations"
         }
@@ -202,7 +211,6 @@ Create a `.dev.vars` file in your project root (`spotify-adder/.dev.vars`) and f
 # .dev.vars
 SPOTIFY_CLIENT_ID="YOUR_SPOTIFY_CLIENT_ID"
 SPOTIFY_CLIENT_SECRET="YOUR_SPOTIFY_CLIENT_SECRET"
-SPOTIFY_REDIRECT_URI="http://localhost:8787/callback"
 ```
 
 ### 7. Generate Cloudflare Bindings Types
@@ -225,14 +233,13 @@ The application will be accessible at `http://localhost:8787` (or similar port).
 ## Deployment to Cloudflare Workers
 
 1.  **Set Production Secrets:**
-    For production, environment variables are stored as secrets in your Cloudflare Worker. These should match your production `SPOTIFY_REDIRECT_URI`.
+    For production, environment variables are stored as secrets in your Cloudflare Worker.
 
     ```bash
     wrangler secret put SPOTIFY_CLIENT_ID
     wrangler secret put SPOTIFY_CLIENT_SECRET
-    wrangler secret put SPOTIFY_REDIRECT_URI
     ```
-    (Enter your respective values when prompted. The `SPOTIFY_REDIRECT_URI` for production must match the one configured in your Spotify Developer Dashboard for your live domain.)
+    (Enter your respective values when prompted.)
 
 2.  **Apply Migrations to Remote D1:**
     If you haven't already, apply your database schema to your live Cloudflare D1 instance.

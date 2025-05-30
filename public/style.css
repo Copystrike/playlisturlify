@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Reset and base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px; /* Base font size */
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 1rem; /* Padding for mobile */
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  background: #f8fafc; /* Lighter, cleaner background */
+  color: #1e293b; /* Darker text for better contrast */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Content starts from top */
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+/* Card container for main content */
+.card, main { /* Target main element or elements with .card class */
+  background: #fff;
+  border-radius: 12px; /* Slightly less rounded */
+  border: 1px solid #e2e8f0; /* Subtle border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.03); /* Softer shadow */
+  padding: 1.5rem; /* Default padding */
+  margin: 1rem 0; /* Margin for spacing */
+  max-width: 500px; /* Max width for content readability */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+h1, h2, h3 {
+  font-family: inherit;
+  font-weight: 700;
+  margin-top: 0;
+  color: #0f172a; /* Even darker for headings */
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.8rem; /* Adjusted for mobile */
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+p, label {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  color: #334155; /* Softer text color */
+}
+
+code {
+  background: #f1f5f9;
+  color: #1d4ed8; /* Adjusted blue */
+  border-radius: 6px;
+  padding: 0.25em 0.5em;
+  font-size: 0.9em;
+  word-break: break-all;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover, a:focus {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+form {
+  margin-bottom: 1rem;
+}
+
+button, input[type="submit"], .button-link {
+  display: block; /* Full width by default */
+  width: 100%;
+  background: #2563eb; /* Primary blue */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.button-link { /* For anchor tags styled as buttons */
+  text-decoration: none;
+}
+
+
+button:hover, button:focus, 
+input[type="submit"]:hover, input[type="submit"]:focus,
+.button-link:hover, .button-link:focus {
+  background-color: #1d4ed8; /* Darker blue on hover/focus */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  text-decoration: none; /* Remove underline for button-links */
+  color: #fff; /* Ensure text color remains white for .button-link */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1; /* Softer border */
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  background-color: #fdfdff; /* Slightly off-white */
+  box-sizing: border-box;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Focus ring */
+}
+
+/* Feedback messages */
+.success, .error {
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.success {
+  color: #065f46; /* Darker green text */
+  background: #d1fae5; /* Lighter green background */
+  border-left-color: #059669;
+}
+
+.error {
+  color: #991b1b; /* Darker red text */
+  background: #fee2e2; /* Lighter red background */
+  border-left-color: #dc2626;
+}
+
+/* Media Queries for responsiveness */
+@media (min-width: 640px) { /* Small tablets and up */
+  body {
+    padding: 2rem; /* More padding on larger screens */
+  }
+  .card, main {
+    padding: 2rem; /* More padding in cards */
+    margin: 2rem auto; /* Center card with auto margin */
+  }
+  h1 {
+    font-size: 2.2rem;
+  }
+  h2 {
+    font-size: 1.6rem;
+  }
+  button, input[type="submit"], .button-link {
+    font-size: 1.05rem;
+    padding: 0.85rem 1.75rem;
+  }
+}
+
+@media (min-width: 768px) { /* Tablets and up */
+   /* No specific changes here, covered by 640px or general styles */
+}
+
+
+/* Hide scrollbars on mobile for a cleaner look - already present, kept for completeness */
+body::-webkit-scrollbar, html::-webkit-scrollbar {
+  display: none;
+}
+body, html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Visually hide elements for accessibility - already present, kept for completeness */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap; /* Add this */
+  border: 0;
+}

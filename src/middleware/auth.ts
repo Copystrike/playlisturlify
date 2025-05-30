@@ -21,18 +21,28 @@ declare module 'hono' {
 }
 
 export const requireAuth = createMiddleware<{ Bindings: CloudflareBindings; }>(async (c, next) => {
-    const userId = getCookie(c, 'user_id'); // Get user ID from the 'user_id' cookie
-    const { DB } = env(c);
+    const sessionId = getCookie(c, '__session'); // Get session ID from the '__session' cookie
 
-    if (!userId) {
+    // Ensure `env(c)` extracts the environment bindings correctly
+    const { DB } = env(c); // Correctly destructure DB from env(c)
+
+    if (!sessionId) {
         // Not authenticated, redirect to login
-        console.log('No user_id cookie, redirecting to login.');
+        console.log('No __session cookie, redirecting to login.');
         return c.redirect('/login');
     }
 
-    // Fetch user from DB to ensure validity and get current data
-    // Using .first<T>() to cast the result to our expected user type
-    const user = await DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<{
+    // Fetch session and user from DB to ensure validity
+    const session = await DB.prepare('SELECT user_id FROM sessions WHERE id = ?').bind(sessionId).first<{ user_id: string }>();
+
+    if (!session) {
+        // Session not found or invalid, clear cookie and redirect to login
+        console.warn(`Session with ID ${sessionId} not found in DB, clearing cookie and redirecting to login.`);
+        c.res.headers.append('Set-Cookie', '__session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax;'); // Clear the cookie
+        return c.redirect('/login');
+    }
+
+    const user = await DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first<{
         id: string;
         access_token: string;
         refresh_token: string;
@@ -41,9 +51,10 @@ export const requireAuth = createMiddleware<{ Bindings: CloudflareBindings; }>(a
     }>();
 
     if (!user) {
-        // User not found or invalid session, clear cookie and redirect to login
-        console.warn(`User with ID ${userId} not found in DB, clearing cookie and redirecting to login.`);
-        c.res.headers.append('Set-Cookie', 'user_id=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax;'); // Clear the cookie
+        // User not found, clear session and redirect to login
+        console.warn(`User with ID ${session.user_id} not found in DB, clearing session and redirecting to login.`);
+        await DB.prepare('DELETE FROM sessions WHERE id = ?').bind(sessionId).run();
+        c.res.headers.append('Set-Cookie', '__session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax;'); // Clear the cookie
         return c.redirect('/login');
     }
 

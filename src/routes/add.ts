@@ -23,11 +23,19 @@ const add = new Hono<CustomContext>();
 
 // Middleware to validate API key and setup Spotify SDK
 export const validateApiToken = async (c: any, next: any) => {
-    const apiToken = c.req.query('token');
+    let apiToken = c.req.query('token');
+    const authHeader = c.req.header('Authorization');
     const { DB, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = env(c);
 
+    if (!apiToken && authHeader) {
+        const parts = authHeader.split(' ');
+        if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+            apiToken = parts[1];
+        }
+    }
+
     if (!apiToken) {
-        return c.text('Error: API key (token) is missing.', 401);
+        return c.text('Error: API key (token) is missing in query parameter or Authorization header.', 401);
     }
 
     const user = await DB.prepare('SELECT * FROM users WHERE api_key = ?').bind(apiToken).first();
@@ -89,24 +97,41 @@ export const validateApiToken = async (c: any, next: any) => {
     await next();
 };
 
-add.get('/', validateApiToken, async (c) => {
-    const songName = c.req.query('song');
-    const playlistName = c.req.query('playlist');
+add.on(['GET', 'POST'], '/', validateApiToken, async (c) => {
+    let songQuery: string | undefined;
+    let playlistName: string | undefined;
+
+    if (c.req.method === 'GET') {
+        songQuery = c.req.query('query');
+        playlistName = c.req.query('playlist');
+    } else if (c.req.method === 'POST') {
+        try {
+            const body = await c.req.parseBody(); // Handles form-data and URL-encoded
+            if (typeof body === 'object' && body !== null) {
+                songQuery = body.query as string | undefined;
+                playlistName = body.playlist as string | undefined;
+            }
+        } catch (e) {
+            console.error('Error parsing POST body:', e);
+            return c.text('Error: Could not parse request body.', 400);
+        }
+    }
+
     // Use the correct context key and type assertion
     const authenticatedUser = c.get('currentUser') as CustomContext['Variables']['currentUser'];
     const spotifySdk = c.get('spotifySdk') as SpotifyApi;
 
-    if (!songName) {
-        return c.text('Error: Song name (song) is missing.', 400);
+    if (!songQuery) { // Changed from songName to songQuery
+        return c.text('Error: Song query (query) is missing.', 400); // Updated message
     }
     if (!playlistName) {
         return c.text('Error: Playlist name (playlist) is missing.', 400);
     }
 
     try {
-        const track = await searchTrack(spotifySdk, songName);
+        const track = await searchTrack(spotifySdk, songQuery); // Changed from songName to songQuery
         if (!track) {
-            return c.text(`Error: Song "${songName}" not found on Spotify.`, 404);
+            return c.text(`Error: Song for query "${songQuery}" not found on Spotify.`, 404); // Updated message
         }
         console.log(`Found song: ${track.name} by ${track.artists.map(a => a.name).join(', ')}`);
 

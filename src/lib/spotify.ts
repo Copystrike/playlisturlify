@@ -5,7 +5,6 @@ import {
 } from '@spotify/web-api-ts-sdk';
 
 const SPOTIFY_ACCOUNTS_URL = 'https://accounts.spotify.com';
-const SPOTIFY_API_URL = 'https://api.spotify.com/v1'; // For potential future direct API calls
 
 /**
  * Generates the Spotify authorization URL.

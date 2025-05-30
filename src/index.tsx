@@ -8,6 +8,7 @@ import apiRoutes from './routes/api';
 import addRoutes from './routes/add';
 import { env } from 'hono/adapter';
 import { csrf } from 'hono/csrf';
+import { getCookie } from 'hono/cookie';
 
 const app = new Hono<{ Bindings: CloudflareBindings; }>();
 
@@ -17,6 +18,10 @@ app.use(renderer);
 app.use(csrf());
 
 app.get('/', async (c) => {
+  const sessionCookie = getCookie(c, '__session');
+  if (sessionCookie) {
+    return c.redirect('/dashboard');
+  }
   const { DB } = env(c);
   try {
     await DB.prepare('SELECT 1').run();
@@ -26,11 +31,11 @@ app.get('/', async (c) => {
   }
 
   return c.render(
-    <div>
-      <h1>Welcome to Spotify Shortcut Helper!</h1>
-      <p>Log in with Spotify to generate your API key and start adding songs from your iPhone Shortcuts.</p>
-      <a href="/login">Log in with Spotify</a>
-    </div>
+    <main class="card">
+      <h1>Spotify Shortcut Helper</h1>
+      <p>Log in with Spotify to manage your API key and easily add songs to your playlists via iPhone Shortcuts.</p>
+      <a href="/login" class="button-link">Log in with Spotify</a>
+    </main>
   );
 });
 

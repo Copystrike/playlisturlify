@@ -14,10 +14,15 @@ const SPOTIFY_SCOPES = [
 ];
 
 auth.get('/login', (c) => {
-    const { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } = env(c);
+    const { SPOTIFY_CLIENT_ID } = env(c);
+    const requestUrl = new URL(c.req.url);
+    // Construct the redirect_uri based on the current request's host and protocol.
+    // The path /auth/callback corresponds to the callback handler in this auth router.
+    const redirectUri = `${requestUrl.protocol}//${requestUrl.host}/callback`;
+
     const authUrl = getAuthorizationUrl(
         SPOTIFY_CLIENT_ID as string,
-        SPOTIFY_REDIRECT_URI as string,
+        redirectUri,
         SPOTIFY_SCOPES
     );
     return c.redirect(authUrl);
@@ -25,7 +30,12 @@ auth.get('/login', (c) => {
 
 auth.get('/callback', async (c) => {
     const { code, error } = c.req.query();
-    const { DB, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI } = env(c);
+    // Remove SPOTIFY_REDIRECT_URI from env destructuring
+    const { DB, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = env(c);
+    const requestUrl = new URL(c.req.url);
+    // Construct the redirect_uri based on the current request's host and protocol.
+    // This must match the redirect_uri used in the /login route and registered with Spotify.
+    const redirectUri = `${requestUrl.protocol}//${requestUrl.host}/callback`;
 
     if (error) {
         console.error('Spotify OAuth error:', error);
@@ -39,7 +49,7 @@ auth.get('/callback', async (c) => {
     try {
         const tokenData = await exchangeCodeForTokens(
             code,
-            SPOTIFY_REDIRECT_URI as string,
+            redirectUri,
             SPOTIFY_CLIENT_ID as string,
             SPOTIFY_CLIENT_SECRET as string
         );
@@ -91,7 +101,12 @@ auth.get('/callback', async (c) => {
             console.log(`Inserted new user ${spotifyUserId} into D1 with a new API key.`);
         }
 
-        c.res.headers.append('Set-Cookie', `user_id=${spotifyUserId}; Path=/; Max-Age=${60 * 60 * 24 * 30}; HttpOnly; Secure; SameSite=Lax`);
+        const sessionId = crypto.randomUUID(); // Generate a random session ID
+        await DB.prepare('INSERT INTO sessions (id, user_id) VALUES (?, ?)')
+            .bind(sessionId, spotifyUserId)
+            .run();
+
+        c.res.headers.append('Set-Cookie', `__session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 30}; HttpOnly; Secure; SameSite=Lax`);
 
         return c.redirect('/dashboard');
 
