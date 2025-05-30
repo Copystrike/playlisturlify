@@ -4,6 +4,9 @@
 
 This project provides a serverless backend for easily adding songs to your Spotify playlists using custom API keys, designed to be integrated seamlessly with tools like iPhone Shortcuts. Built on Hono, Cloudflare Workers, and Cloudflare D1.
 
+
+<video controls src="docs/ScreenRecording_05-30-2025_04-10-36_1.mov" title="Demo of the Spotify Add to Playlist Helper in action"></video>
+
 ---
 
 ## Project Summary
