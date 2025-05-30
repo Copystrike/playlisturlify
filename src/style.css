@@ -85,6 +85,13 @@ code {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 }
 
+/* Ensure long words like API keys, URLs, and code snippets are breakable */
+code, .breakable {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap; /* Preserve formatting while allowing breaks */
+}
+
 a {
   color: #2563eb;
   text-decoration: none;
@@ -184,6 +191,65 @@ textarea:focus {
   border-left-color: #dc2626;
 }
 
+/* Dashboard styles */
+.dashboard-container {
+  font-family: 'Arial, sans-serif';
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard-title {
+  text-align: center;
+  color: #333;
+}
+
+.dashboard-welcome {
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.api-key-container, .ios-shortcut-container, .api-usage-container, .api-actions-container {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.api-key {
+  font-size: 1.1em;
+  color: #555;
+}
+
+.api-key-note {
+  font-size: 0.9em;
+  color: #777;
+}
+
+.api-button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.api-button:hover {
+  background-color: #0056b3;
+}
+
+.api-code {
+  display: block;
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 4px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
 /* Media Queries for responsiveness */
 @media (min-width: 640px) { /* Small tablets and up */
   body {
@@ -230,4 +296,14 @@ body, html {
   clip: rect(0,0,0,0);
   white-space: nowrap; /* Add this */
   border: 0;
+}
+
+code.breakable {
+  display: block;
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 4px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap; /* Preserve formatting while allowing breaks */
 }

@@ -543,6 +543,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hono/node-server@npm:^1.14.2":
+  version: 1.14.3
+  resolution: "@hono/node-server@npm:1.14.3"
+  peerDependencies:
+    hono: ^4
+  checksum: 10c0/2e873ed38be44bd2499ffd6e592782edd9216475935d992119ad1d3f61f14cb39dc8fe79d1ed5d7d8caeef1d9fd84b36f9715add0b9f98c3d040b5cc9ef872f8
+  languageName: node
+  linkType: hard
+
+"@hono/vite-build@npm:^1.6.2":
+  version: 1.6.2
+  resolution: "@hono/vite-build@npm:1.6.2"
+  peerDependencies:
+    hono: "*"
+  checksum: 10c0/c9fe7be18108a5fb28617983823527763ba400c82ebdd0968281906b9297e852918c47c40b6ec755113939795a10af03d13f512369daa2dd045e08280712ea67
+  languageName: node
+  linkType: hard
+
+"@hono/vite-dev-server@npm:^0.19.1":
+  version: 0.19.1
+  resolution: "@hono/vite-dev-server@npm:0.19.1"
+  dependencies:
+    "@hono/node-server": "npm:^1.14.2"
+    minimatch: "npm:^9.0.3"
+  peerDependencies:
+    hono: "*"
+    miniflare: "*"
+    wrangler: "*"
+  peerDependenciesMeta:
+    hono:
+      optional: false
+    miniflare:
+      optional: true
+    wrangler:
+      optional: true
+  checksum: 10c0/fc643c23ad04aba0a12b35af4b2d6373651e5d9781b0e23c740e3041b919e7b372e02787fbb463b26f7b75027a667db9a4bbbdaec2517ef85c47d49629779d07
+  languageName: node
+  linkType: hard
+
 "@img/sharp-darwin-arm64@npm:0.33.5":
   version: 0.33.5
   resolution: "@img/sharp-darwin-arm64@npm:0.33.5"
@@ -1758,7 +1797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^9.0.4":
+"minimatch@npm:^9.0.3, minimatch@npm:^9.0.4":
   version: 9.0.5
   resolution: "minimatch@npm:9.0.5"
   dependencies:
@@ -1986,6 +2025,8 @@ __metadata:
   resolution: "playlisturlify@workspace:."
   dependencies:
     "@cloudflare/vite-plugin": "npm:^1.2.3"
+    "@hono/vite-build": "npm:^1.6.2"
+    "@hono/vite-dev-server": "npm:^0.19.1"
     "@spotify/web-api-ts-sdk": "npm:^1.2.0"
     hono: "npm:^4.7.10"
     vite: "npm:^6.3.5"
