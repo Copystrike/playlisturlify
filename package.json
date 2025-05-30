@@ -17,5 +17,6 @@
     "vite": "^6.3.5",
     "vite-ssr-components": "^0.1.0",
     "wrangler": "^4.17.0"
-  }
+  },
+  "packageManager": "yarn@4.9.1"
 }
