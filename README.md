@@ -16,7 +16,7 @@ This project provides a serverless backend for easily adding songs to your Spoti
 | Framework      | **Hono** (with JSX templating)                           |
 | Hosting        | Cloudflare Workers                                       |
 | DB             | Cloudflare D1 (SQLite)                                   |
-| OAuth Provider | Spotify           d                                       |
+| OAuth Provider | Spotify                                                  |
 
 ---
 
