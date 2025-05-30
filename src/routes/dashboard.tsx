@@ -1,15 +1,11 @@
-// src/routes/dashboard.ts
 import { Hono } from 'hono';
-import { requireAuth } from '../middleware/auth'; // Import the auth middleware
-import { getCookie, deleteCookie } from 'hono/cookie'; // Ensure deleteCookie is imported
-import { env } from 'hono/adapter'; // Import env helper
+import { requireAuth } from '../middleware/auth';
+import { getCookie, deleteCookie } from 'hono/cookie';
+import { env } from 'hono/adapter';
 
-
-
-// No explicit CloudflareBindings import needed if middleware handles it
 const dashboard = new Hono();
 
-dashboard.use(requireAuth); // Apply authentication middleware to all dashboard routes
+dashboard.use(requireAuth);
 
 dashboard.get('/', (c) => {
   const user = c.get('currentUser');
@@ -99,15 +95,10 @@ dashboard.get('/', (c) => {
           </button>
         </form>
       </div>
-
-      <p style={{ textAlign: 'center', marginTop: '30px' }}>
-        <a href="/" style={{ color: '#007BFF', textDecoration: 'none' }}>Back to PlaylistUrlify Home</a>
-      </p>
     </div>
   );
 });
 
-// Add a new route for logout
 dashboard.post('/logout', async (c) => {
   const sessionId = getCookie(c, '__session');
   const { DB } = env(c) as unknown as Cloudflare.Env;
@@ -121,7 +112,6 @@ dashboard.post('/logout', async (c) => {
     }
   }
 
-  // Use deleteCookie to clear the session cookie
   deleteCookie(c, '__session', { path: '/', httpOnly: true, secure: true, sameSite: 'Lax' });
   return c.redirect('/?message=You have been logged out.');
 });
