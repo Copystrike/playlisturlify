@@ -3,6 +3,7 @@ import {
     SpotifyApi,
     AccessToken,
 } from '@spotify/web-api-ts-sdk';
+import { SongInfo } from '../dto/SongInfo';
 
 const SPOTIFY_ACCOUNTS_URL = 'https://accounts.spotify.com';
 
@@ -201,3 +202,39 @@ export async function addTrackToPlaylist(sdk: SpotifyApi, playlistId: string, tr
         throw error;
     }
 }
+
+/**
+ * Searches for a track on Spotify based on a given SongInfo object.
+ * First attempts a query with artist names prefixed by `artist:`.
+ * If no results are found, retries with a simpler query.
+ * @param sdk The authenticated SpotifyApi SDK instance.
+ * @param songInfo The SongInfo object containing title and artist information.
+ * @returns The first matching track object or null if not found.
+ */
+export async function searchTrackBySongInfo(sdk: SpotifyApi, songInfo: SongInfo) {
+    const artistQuery = songInfo.artist.join(', ');
+
+    console.log("songInfo", {
+        title: songInfo.title,
+        artist: songInfo.artist,
+        artistQuery: artistQuery
+    });
+
+    // First attempt with `artist:` prefix
+    let query = `${songInfo.title} artist:"${artistQuery}"`;
+    let searchResult = await sdk.search(query, ['track'], undefined, 1);
+    if (searchResult.tracks && searchResult.tracks.items.length > 0) {
+        return searchResult.tracks.items[0];
+    }
+
+    // Retry with simpler query
+    query = `${songInfo.title} ${artistQuery}`;
+    searchResult = await sdk.search(query, ['track'], undefined, 1);
+    if (searchResult.tracks && searchResult.tracks.items.length > 0) {
+        return searchResult.tracks.items[0];
+    }
+
+    return null;
+}
+
+

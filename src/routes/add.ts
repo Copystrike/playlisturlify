@@ -2,7 +2,10 @@
 import { Context, Hono } from 'hono';
 import { env } from 'hono/adapter';
 import { createSpotifySdk, searchTrack, findUserPlaylist, addTrackToPlaylist, refreshAccessToken } from '../lib/spotify';
+import { QueryCleaning } from '../lib/ai'; // New import for AI functionality
 import type { SpotifyApi } from '@spotify/web-api-ts-sdk';
+import { SongInfo } from '../dto/SongInfo';
+import { searchTrackBySongInfo } from '../lib/spotify';
 
 // Define the context type for Hono
 type CustomContext = {
@@ -100,16 +103,21 @@ export const validateApiToken = async (c: any, next: any) => {
 add.on(['GET', 'POST'], '/', validateApiToken, async (c) => {
     let songQuery: string | undefined;
     let playlistName: string | undefined;
+    let useAi: boolean = false; // By default, AI is not used.
 
     if (c.req.method === 'GET') {
-        songQuery = c.req.query('query');
+        const queryParam = c.req.query('query');
+        songQuery = queryParam ? decodeURIComponent(queryParam) : undefined;
         playlistName = c.req.query('playlist');
+        useAi = c.req.query('ai') === 'true';
     } else if (c.req.method === 'POST') {
         try {
             const body = await c.req.parseBody(); // Handles form-data and URL-encoded
             if (typeof body === 'object' && body !== null) {
-                songQuery = body.query as string | undefined;
+                songQuery = body.query ? decodeURIComponent(body.query as string) : undefined;
                 playlistName = body.playlist as string | undefined;
+                // Enable AI if the 'ai' form field is 'true'
+                useAi = (body.ai as string) === 'true';
             }
         } catch (e) {
             console.error('Error parsing POST body:', e);
@@ -128,11 +136,31 @@ add.on(['GET', 'POST'], '/', validateApiToken, async (c) => {
         return c.text('Error: Playlist name (playlist) is missing.', 400);
     }
 
-    try {
-        const track = await searchTrack(spotifySdk, songQuery); // Changed from songName to songQuery
-        if (!track) {
-            return c.text(`Error: Song for query "${songQuery}" not found on Spotify.`, 404); // Updated message
+    let cleanedSongInfo: SongInfo | null = null;
+
+    // Execute AI query cleaning if requested and the API key is available
+    if (useAi) {
+        const { GEMINI_API_KEY } = env(c); // This should be your Google Gemini API Key
+
+        if (!GEMINI_API_KEY) {
+            console.warn('AI processing requested but API_KEY for the LLM is not configured. Skipping AI refinement.');
+        } else {
+            console.log(`AI processing enabled for query: "${songQuery}"`);
+            cleanedSongInfo = await QueryCleaning(songQuery, GEMINI_API_KEY as string);
+            console.log(`AI cleaned song info: ${JSON.stringify(cleanedSongInfo)}`);
         }
+    }
+
+    try {
+        if (!cleanedSongInfo) {
+            cleanedSongInfo = new SongInfo(songQuery, []);
+        }
+
+        const track = await searchTrackBySongInfo(spotifySdk, cleanedSongInfo);
+        if (!track) {
+            return c.text(`Error: Song for query "${songQuery}" not found on Spotify.`, 404);
+        }
+
         console.log(`Found song: ${track.name} by ${track.artists.map(a => a.name).join(', ')}`);
 
         const playlist = await findUserPlaylist(spotifySdk, playlistName);
@@ -141,12 +169,14 @@ add.on(['GET', 'POST'], '/', validateApiToken, async (c) => {
         }
         console.log(`Found playlist: ${playlist.name} (ID: ${playlist.id})`);
 
-        const snapshotId = await addTrackToPlaylist(spotifySdk, playlist.id, track.uri);
+        // Changed variable name for clarity, as addTrackToPlaylist returns a boolean.
+        const wasAdded = await addTrackToPlaylist(spotifySdk, playlist.id, track.uri);
 
-        if (snapshotId) {
+        if (wasAdded) {
             console.log(`Successfully added "${track.name}" to "${playlist.name}" for user ${authenticatedUser.id}.`);
             return c.text(`Successfully added "${track.name}" to "${playlist.name}".`);
         } else {
+            // This case is unlikely to be hit if the function throws on failure, but is good for safety.
             return c.text('Error: Failed to add song to playlist.', 500);
         }
 
